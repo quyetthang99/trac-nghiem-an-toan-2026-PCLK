@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thi trắc nghiệm An toàn - Quyết Thắng - Đội QLKV Văn Bàn</title>
+    <style>
+        :root { --primary: #0284c7; --bg: #f0f9ff; --correct: #16a34a; --wrong: #ef4444; --warning: #f59e0b; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .app-container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
+        
+        h1, h2, h3 { text-align: center; color: var(--primary); }
+        .author-text { text-align: center; color: #64748b; font-style: italic; font-weight: bold; font-size: 1.1rem; margin-top: 5px; margin-bottom: 25px; }
+        .hidden { display: none !important; }
+        
+        /* Dropdown CSS */
+        .dropdown-container { margin: 20px 0; text-align: center; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .dropdown-container label { font-weight: bold; color: #1e293b; display: block; margin-bottom: 10px; font-size: 1.1rem; }
+        #quiz-selector { width: 100%; max-width: 400px; padding: 12px; font-size: 1rem; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer; outline: none; background: white; }
+        
+        /* Menu Screen */
+        .menu-screen { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+        .menu-btn { padding: 15px; font-size: 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; }
+        .btn-study { background: #0ea5e9; }
+        .btn-quiz { background: #f59e0b; }
+        .btn-full { background: #8b5cf6; } 
+        .btn-search { background: #14b8a6; } 
+        .menu-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+        /* General Buttons */
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; background: var(--primary); transition: 0.3s; }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
+        .btn-back { background: #64748b; margin-bottom: 20px; }
+
+        /* Lists (Study, Review & Search) */
+        .scroll-list { max-height: 65vh; overflow-y: auto; padding-right: 10px; text-align: left; }
+        .list-item { padding: 15px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px; background: #f8fafc; border-radius: 8px; }
+        .q-text { font-weight: 600; font-size: 1.1rem; margin-bottom: 8px; color: #1e293b; }
+        .ans-box { padding: 8px 12px; border-radius: 6px; margin-top: 5px; font-weight: 500; }
+        .ans-correct { background: #dcfce3; color: var(--correct); border-left: 4px solid var(--correct); }
+        .ans-wrong { background: #fee2e2; color: var(--wrong); border-left: 4px solid var(--wrong); }
+        .ans-missing { background: #fef3c7; color: var(--warning); border-left: 4px solid var(--warning); }
+        .ans-neutral { background: #f1f5f9; color: #475569; border-left: 4px solid #cbd5e1; font-weight: normal; }
+
+        /* Search Input */
+        #search-input { width: 100%; padding: 15px; font-size: 1.1rem; border: 2px solid var(--primary); border-radius: 8px; margin-bottom: 20px; outline: none; box-sizing: border-box; }
+        #search-input:focus { border-color: #14b8a6; box-shadow: 0 0 8px rgba(20, 184, 166, 0.3); }
+        .category-tag { font-size: 0.85rem; background: #e2e8f0; padding: 4px 8px; border-radius: 4px; color: #475569; margin-bottom: 8px; display: inline-block; font-weight: bold; }
+
+        /* Quiz Mode */
+        .progress-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .progress { font-size: 1.1rem; color: #64748b; font-weight: bold; }
+        
+        #question-box { margin-bottom: 20px; font-weight: 600; font-size: 1.2rem; color: #1e293b; line-height: 1.5; min-height: 60px; }
+        .option { display: block; padding: 15px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .option:hover { border-color: var(--primary); background: #f0f7ff; }
+        .option.selected { border-color: var(--primary); background: var(--primary); color: white; }
+        
+        /* Navigation Buttons */
+        .nav-btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .nav-btn { flex: 1; padding: 15px; font-size: 1.1rem; }
+        .btn-prev { background: #64748b; }
+        .btn-submit { width: 100%; padding: 15px; font-size: 1.2rem; background: var(--correct); margin-top: 15px; }
+        .btn-submit:hover { background: #15803d; }
+
+        /* Result Screen */
+        .result-screen { text-align: center; }
+        .score { font-size: 4rem; font-weight: bold; color: var(--correct); margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="menu-ui">
+        <h1 style="margin-bottom: 5px;">Thi trắc nghiệm An toàn PCLK 2026</h1>
+        <p class="author-text">Design by Quyết Thắng - Đội QLKV Văn Bàn - 0976297555</p>
+        
+        <div class="dropdown-container">
+            <label for="quiz-selector">Chọn Bộ Đề Ôn Thi:</label>
+            <select id="quiz-selector">
+                <option value="">Đang tải danh sách đề...</option>
+            </select>
+        </div>
+        
+        <div class="menu-screen">
+            <button class="menu-btn btn-study" onclick="startStudyMode()">📚 Chế độ Học Tập (Xem toàn bộ đề)</button>
+            <button class="menu-btn btn-quiz" onclick="startQuizMode(false)">🎯 Thi Thử Ngẫu Nhiên (50 câu)</button>
+            <button class="menu-btn btn-full" onclick="startQuizMode(true)">🚀 Thi Thử Toàn Bộ (Full câu hỏi)</button>
+            <button class="menu-btn btn-search" onclick="startSearchMode()">🔍 Tìm Kiếm Câu Hỏi</button>
+        </div>
+    </div>
+
+    <div id="search-ui" class="hidden">
+        <button class="btn btn-back" onclick="goHome()">⬅ Quay lại Menu</button>
+        <h2 id="search-title">Tra Cứu Câu Hỏi</h2>
+        <input type="text" id="search-input" placeholder="Nhập từ khóa (VD: Quy trình an toàn)..." onkeyup="performSearch()">
+        <div id="search-results" class="scroll-list"></div>
+    </div>
+
+    <div id="study-ui" class="hidden">
+        <button class="btn btn-back" onclick="goHome()">⬅ Quay lại Menu</button>
+        <h2 id="study-title">Danh sách câu hỏi ôn tập</h2>
+        <div id="study-list" class="scroll-list"></div>
+    </div>
+
+    <div id="quiz-ui" class="hidden">
+        <div class="progress-container">
+            <button class="btn btn-back" style="margin-bottom: 0;" onclick="goHome()">⬅ Dừng thi</button>
+            <div class="progress" id="progress">Câu: 1/50</div>
+        </div>
+        
+        <div id="question-box">Đang tải câu hỏi...</div>
+        <div id="options-box"></div>
+        
+        <div class="nav-btn-group">
+            <button id="prev-btn" class="btn nav-btn btn-prev" onclick="prevQuestion()">⬅ Trước</button>
+            <button id="next-btn" class="btn nav-btn" onclick="nextQuestion()">Sau ➡</button>
+        </div>
+        <button id="submit-btn" class="btn btn-submit" onclick="submitQuiz()">Nộp bài & Xem kết quả</button>
+    </div>
+
+    <div id="result-ui" class="hidden result-screen">
+        <h2>Kết Quả Bài Thi</h2>
+        <div class="score" id="final-score">0</div>
+        <p id="feedback" style="font-size: 1.2rem; color: #475569; margin-bottom: 20px;"></p>
+        
+        <button class="btn btn-back" onclick="goHome()" style="padding: 12px 25px; font-size: 1.1rem; margin-bottom: 20px;">Về Trang Chủ</button>
+
+        <h3>Chi tiết bài làm của bạn:</h3>
+        <div id="review-list" class="scroll-list"></div>
+    </div>
+</div>
+
+<script src="database.js"></script>
+
+<script>
+    let currentQuizData = []; 
+    let currentQuestions = [];
+    let userAnswers = [];
+    let currentIdx = 0;
+
+    const menuUI = document.getElementById('menu-ui');
+    const studyUI = document.getElementById('study-ui');
+    const quizUI = document.getElementById('quiz-ui');
+    const resultUI = document.getElementById('result-ui');
+    const searchUI = document.getElementById('search-ui'); 
+
+    window.onload = () => {
+        const selector = document.getElementById('quiz-selector');
+        if (typeof database === 'undefined') {
+            selector.innerHTML = '<option value="">⚠ Lỗi: Chưa có file database.js</option>';
+            return;
+        }
+        
+        selector.innerHTML = ''; 
+        for (let quizName in database) {
+            let option = document.createElement('option');
+            option.value = quizName;
+            option.innerText = quizName + ` (${database[quizName].length} câu)`;
+            selector.appendChild(option);
+        }
+    };
+
+    function goHome() {
+        studyUI.classList.add('hidden');
+        quizUI.classList.add('hidden');
+        resultUI.classList.add('hidden');
+        searchUI.classList.add('hidden'); 
+        menuUI.classList.remove('hidden');
+    }
+
+    function getSelectedQuizData() {
+        const selector = document.getElementById('quiz-selector');
+        if (!selector || !selector.value) return null;
+        return database[selector.value];
+    }
+
+    // --- CHỨC NĂNG TÌM KIẾM ĐÃ CẬP NHẬT ---
+    function startSearchMode() {
+        const selectedCategory = document.getElementById('quiz-selector').value;
+        if (!selectedCategory || typeof database === 'undefined') {
+            return alert("Vui lòng chọn một bộ đề ở Menu trước khi tìm kiếm!");
+        }
+        
+        menuUI.classList.add('hidden');
+        searchUI.classList.remove('hidden');
+        
+        // Cập nhật tiêu đề để biết đang tìm trong bộ đề nào
+        document.getElementById('search-title').innerText = `Tra Cứu: ${selectedCategory}`;
+        
+        const searchInput = document.getElementById('search-input');
+        const resultsContainer = document.getElementById('search-results');
+        
+        searchInput.value = ''; 
+        resultsContainer.innerHTML = `<div style="text-align:center; color:#64748b; margin-top: 20px;">Gõ từ khóa để tìm kiếm trong bộ đề <b>${selectedCategory}</b>...</div>`;
+        searchInput.focus(); 
+    }
+
+    function performSearch() {
+        const query = document.getElementById('search-input').value.toLowerCase().trim();
+        const resultsContainer = document.getElementById('search-results');
+        const selectedCategory = document.getElementById('quiz-selector').value;
+        
+        if (query.length < 2) {
+            resultsContainer.innerHTML = `<div style="text-align:center; color:#64748b; margin-top: 20px;">Vui lòng nhập ít nhất 2 ký tự...</div>`;
+            return;
+        }
+
+        let resultsHTML = '';
+        let count = 0;
+        
+        // Chỉ lấy dữ liệu của bộ đề đã chọn
+        const dataToSearch = database[selectedCategory];
+
+        dataToSearch.forEach((item) => {
+            if (item.q.toLowerCase().includes(query)) {
+                count++;
+                
+                let html = `
+                    <div class="list-item">
+                        <div class="q-text">${item.q}</div>
+                `;
+                
+                // In ra toàn bộ đáp án A, B, C, D để so sánh
+                ['a', 'b', 'c', 'd'].forEach(key => {
+                    if(item[key]) {
+                        if (key === item.correct) {
+                            html += `<div class="ans-box ans-correct">✔ <strong>${key.toUpperCase()}. ${item[key]}</strong></div>`;
+                        } else {
+                            html += `<div class="ans-box ans-neutral">${key.toUpperCase()}. ${item[key]}</div>`;
+                        }
+                    }
+                });
+
+                html += `</div>`;
+                resultsHTML += html;
+            }
+        });
+
+        if (count === 0) {
+            resultsContainer.innerHTML = `<div style="text-align:center; color:#ef4444; margin-top: 20px;">Không tìm thấy câu hỏi nào chứa từ khóa "<b>${query}</b>" trong bộ đề này.</div>`;
+        } else {
+            resultsContainer.innerHTML = `<div style="margin-bottom: 15px; font-weight: bold; color: var(--primary);">🎯 Tìm thấy ${count} kết quả:</div>` + resultsHTML;
+        }
+    }
+
+    // --- CHẾ ĐỘ HỌC TẬP ---
+    function startStudyMode() {
+        currentQuizData = getSelectedQuizData();
+        if (!currentQuizData) return alert("Vui lòng chọn bộ đề hợp lệ!");
+
+        menuUI.classList.add('hidden');
+        studyUI.classList.remove('hidden');
+        
+        document.getElementById('study-title').innerText = `Ôn Tập: ${document.getElementById('quiz-selector').value}`;
+        
+        const list = document.getElementById('study-list');
+        list.innerHTML = ''; 
+        
+        currentQuizData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            
+            let html = `<div class="q-text">Câu ${index + 1}: ${item.q}</div>`;
+            
+            ['a', 'b', 'c', 'd'].forEach(key => {
+                if(item[key]) {
+                    if (key === item.correct) {
+                        html += `<div class="ans-box ans-correct">✔ <strong>${key.toUpperCase()}. ${item[key]}</strong></div>`;
+                    } else {
+                        html += `<div class="ans-box ans-neutral">${key.toUpperCase()}. ${item[key]}</div>`;
+                    }
+                }
+            });
+
+            div.innerHTML = html;
+            list.appendChild(div);
+        });
+    }
+
+    // --- CHẾ ĐỘ THI THỬ ---
+    function startQuizMode(isFull) {
+        currentQuizData = getSelectedQuizData();
+        if (!currentQuizData) return alert("Vui lòng chọn bộ đề hợp lệ!");
+
+        let shuffled = [...currentQuizData].sort(() => 0.5 - Math.random());
+        let maxQuestions = isFull ? shuffled.length : Math.min(50, shuffled.length);
+        currentQuestions = shuffled.slice(0, maxQuestions);
+        
+        userAnswers = new Array(currentQuestions.length).fill(null);
+        currentIdx = 0;
+        
+        menuUI.classList.add('hidden');
+        quizUI.classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const data = currentQuestions[currentIdx];
+        document.getElementById('progress').innerText = `Câu: ${currentIdx + 1} / ${currentQuestions.length}`;
+        document.getElementById('question-box').innerText = data.q;
+        
+        const oBox = document.getElementById('options-box');
+        oBox.innerHTML = '';
+        
+        ['a', 'b', 'c', 'd'].forEach(key => {
+            if(data[key]) {
+                const div = document.createElement('div');
+                div.className = 'option';
+                
+                if (userAnswers[currentIdx] === key) div.classList.add('selected');
+                
+                div.innerText = `${key.toUpperCase()}. ${data[key]}`;
+                div.onclick = () => {
+                    document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                    userAnswers[currentIdx] = key; 
+                };
+                oBox.appendChild(div);
+            }
+        });
+
+        document.getElementById('prev-btn').disabled = (currentIdx === 0);
+        document.getElementById('next-btn').disabled = (currentIdx === currentQuestions.length - 1);
+    }
+
+    function prevQuestion() { if (currentIdx > 0) { currentIdx--; loadQuestion(); } }
+    function nextQuestion() { if (currentIdx < currentQuestions.length - 1) { currentIdx++; loadQuestion(); } }
+
+    function submitQuiz() {
+        const unanswered = userAnswers.filter(ans => ans === null).length;
+        if (unanswered > 0) {
+            const confirmSubmit = confirm(`Bạn còn ${unanswered} câu chưa làm. Bạn có chắc chắn muốn nộp bài?`);
+            if (!confirmSubmit) return; 
+        }
+
+        let score = 0;
+        for (let i = 0; i < currentQuestions.length; i++) {
+            if (userAnswers[i] === currentQuestions[i].correct) score++;
+        }
+        showResult(score);
+    }
+
+    function showResult(score) {
+        quizUI.classList.add('hidden');
+        resultUI.classList.remove('hidden');
+        
+        document.getElementById('final-score').innerText = `${score} / ${currentQuestions.length}`;
+        
+        const percentage = (score / currentQuestions.length) * 100;
+        const feedback = document.getElementById('feedback');
+        if (percentage >= 80) feedback.innerText = "Tuyệt vời! Bạn đã nắm rất vững kiến thức.";
+        else if (percentage >= 50) feedback.innerText = "Khá tốt! Chú ý xem lại những câu làm sai bên dưới nhé.";
+        else feedback.innerText = "Cần cố gắng hơn! Hãy đọc kỹ đáp án đúng bên dưới.";
+
+        const reviewList = document.getElementById('review-list');
+        reviewList.innerHTML = '';
+
+        currentQuestions.forEach((q, index) => {
+            const userAnsKey = userAnswers[index];
+            const correctKey = q.correct;
+            const isCorrect = (userAnsKey === correctKey);
+            
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            
+            let html = `<div class="q-text">Câu ${index + 1}: ${q.q}</div>`;
+            
+            if (userAnsKey) {
+                if (isCorrect) {
+                    html += `<div class="ans-box ans-correct">✔ Bạn chọn: ${q[userAnsKey]} (Đúng)</div>`;
+                } else {
+                    html += `<div class="ans-box ans-wrong">✘ Bạn chọn: ${q[userAnsKey]} (Sai)</div>`;
+                    html += `<div class="ans-box ans-correct" style="margin-top:5px;">✔ Đáp án đúng: ${q[correctKey]}</div>`;
+                }
+            } else {
+                html += `<div class="ans-box ans-missing">⚠ Bạn chưa chọn đáp án</div>`;
+                html += `<div class="ans-box ans-correct" style="margin-top:5px;">✔ Đáp án đúng: ${q[correctKey]}</div>`;
+            }
+
+            div.innerHTML = html;
+            reviewList.appendChild(div);
+        });
+    }
+</script>
+</body>
+</html>
